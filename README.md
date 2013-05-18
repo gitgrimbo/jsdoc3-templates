@@ -1,6 +1,6 @@
-A selection of custom [/jsdoc3/jsdoc](/jsdoc3/jsdoc) templates.
+A selection of custom https://github.com/jsdoc3/jsdoc templates.
 
-To choose a custom template when using the [/phasebash/jsdoc3-maven-plugin](/phasebash/jsdoc3-maven-plugin) Maven plugin.
+To choose a custom template when using the https://github.com/phasebash/jsdoc3-maven-plugin Maven plugin.
 
 ````xml
             <!--
