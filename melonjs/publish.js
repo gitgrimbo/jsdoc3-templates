@@ -12,8 +12,7 @@ var template = require('jsdoc/template'),
     hasOwnProp = Object.prototype.hasOwnProperty,
     data,
     view,
-    outdir = env.opts.destination,
-    ModuleHelper = require('./ModuleHelper').ModuleHelper;
+    outdir = env.opts.destination;
 
 
 function find(spec) {
@@ -194,15 +193,20 @@ function buildNav(members) {
     var nav = '<h2><a href="index.html">Index</a></h2>',
         seen = {},
         hasClassList = false,
-        classNav = '',
-        globalNav = '';
+        classNav = '';
 
     if (members.modules.length) {
         nav += '<h3>Modules</h3><ul>';
-        nav += new ModuleHelper(members.modules, linkto).printModules();
+        members.modules.forEach(function(m) {
+            if ( !hasOwnProp.call(seen, m.longname) ) {
+                nav += '<li>'+linkto(m.longname, m.name)+'</li>';
+            }
+            seen[m.longname] = true;
+        });
+        
         nav += '</ul>';
     }
-
+    
     if (members.externals.length) {
         nav += '<h3>Externals</h3><ul>';
         members.externals.forEach(function(e) {
@@ -276,20 +280,15 @@ function buildNav(members) {
     }
     
     if (members.globals.length) {
+        nav += '<h3>Global</h3><ul>';
         members.globals.forEach(function(g) {
             if ( g.kind !== 'typedef' && !hasOwnProp.call(seen, g.longname) ) {
-                globalNav += '<li>' + linkto(g.longname, g.name) + '</li>';
+                nav += '<li>'+linkto(g.longname, g.name)+'</li>';
             }
             seen[g.longname] = true;
         });
         
-        if (!globalNav) {
-            // turn the heading into a link so you can actually get to the global page
-            nav += '<h3>' + linkto('global', 'Global') + '</h3>';
-        }
-        else {
-            nav += '<h3>Global</h3><ul>' + globalNav + '</ul>';
-        }
+        nav += '</ul>';
     }
 
     return nav;
@@ -375,37 +374,15 @@ exports.publish = function(taffyData, opts, tutorials) {
     }
     fs.mkPath(outdir);
 
-    // copy the template's static files to outdir
-    var fromDir = path.join(templatePath, 'static');
-    var staticFiles = fs.ls(fromDir, 3);
-
+    // copy static files to outdir
+    var fromDir = path.join(templatePath, 'static'),
+        staticFiles = fs.ls(fromDir, 3);
+        
     staticFiles.forEach(function(fileName) {
         var toDir = fs.toDir( fileName.replace(fromDir, outdir) );
         fs.mkPath(toDir);
         fs.copyFileSync(fileName, toDir);
     });
-
-    // copy user-specified static files to outdir
-    var staticFilePaths;
-    var staticFileFilter;
-    var staticFileScanner;
-    if (conf['default'].staticFiles) {
-        staticFilePaths = conf['default'].staticFiles.paths || [];
-        staticFileFilter = new (require('jsdoc/src/filter')).Filter(conf['default'].staticFiles);
-        staticFileScanner = new (require('jsdoc/src/scanner')).Scanner();
-
-        staticFilePaths.forEach(function(filePath) {
-            var extraStaticFiles = staticFileScanner.scan([filePath], 10, staticFileFilter);
-
-            extraStaticFiles.forEach(function(fileName) {
-                var sourcePath = fs.statSync(filePath).isDirectory() ? filePath :
-                    path.dirname(filePath);
-                var toDir = fs.toDir( fileName.replace(sourcePath, outdir) );
-                fs.mkPath(toDir);
-                fs.copyFileSync(fileName, toDir);
-            });
-        });
-    }
     
     if (sourceFilePaths.length) {
         sourceFiles = shortenPaths( sourceFiles, path.commonPrefix(sourceFilePaths) );
