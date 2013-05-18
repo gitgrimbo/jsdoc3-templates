@@ -39,9 +39,12 @@ jsdoc/conf.json (relative to pom.xml)
         "template": "jsdoc/jsdoc3-templates/my_first_template",
         "templates": {
             "default": {
-                "outputSourceFiles": false
+                "outputSourceFiles": false,
+                "outputSourceReference": false
             }
         }
     }
 }
 ````
+
+`outputSourceReference` is a custom option to omit the source file/lineno reference from the docs. E.g. https://github.com/gitgrimbo/jsdoc3-templates/blob/02f6a9593c901de337dffcdcfb829647f676dd27/melonjs/tmpl/details.tmpl#L65.
