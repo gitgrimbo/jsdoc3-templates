@@ -28,8 +28,8 @@ a:active {
 #logo
 {
 	width: 100%;
-	height: 110px;
 	background-color: #667F03;
+    padding: 0.5em 0 0.5em 0;
 }
 
 #logo_text
@@ -53,7 +53,6 @@ a:active {
 
 #logo_text h1, #logo_text h1 a, #logo_text h1 a:hover 
 {
-	padding: 22px 0 0 0;
 	color: #FFF;
 	letter-spacing: 0.1em;
 	text-decoration: none;
@@ -321,4 +320,18 @@ h6
 
 .disabled {
     color: #454545;
+}
+
+
+
+
+
+
+
+
+
+
+.returns .param-type {
+    padding: 1px;
+    border: solid 1px lightgray;
 }

@@ -12,7 +12,9 @@ var template = require('jsdoc/template'),
     hasOwnProp = Object.prototype.hasOwnProperty,
     data,
     view,
-    outdir = env.opts.destination;
+    outdir = env.opts.destination,
+    //grimbo: use ModuleHelper to trim module path off module link
+    ModuleHelper = require('./ModuleHelper').ModuleHelper;
 
 
 function find(spec) {
@@ -197,13 +199,8 @@ function buildNav(members) {
 
     if (members.modules.length) {
         nav += '<h3>Modules</h3><ul>';
-        members.modules.forEach(function(m) {
-            if ( !hasOwnProp.call(seen, m.longname) ) {
-                nav += '<li>'+linkto(m.longname, m.name)+'</li>';
-            }
-            seen[m.longname] = true;
-        });
-        
+        //grimbo: use ModuleHelper to trim module path off module link
+        nav += new ModuleHelper(members.modules, linkto).printModules();
         nav += '</ul>';
     }
     
@@ -444,6 +441,8 @@ exports.publish = function(taffyData, opts, tutorials) {
     view.resolveAuthorLinks = resolveAuthorLinks;
     view.tutoriallink = tutoriallink;
     view.htmlsafe = htmlsafe;
+    //grimbo: pass the conf to the template.
+    view.outputSourceReference = (true === conf['default'].outputSourceReference);
 
     // once for all
     view.nav = buildNav(members);
