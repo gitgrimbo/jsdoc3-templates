@@ -176,6 +176,41 @@ function attachModuleSymbols(doclets, modules) {
     });
 }
 
+function makeModuleMap(memberModules) {
+    var modules = {
+        itemCount: 0,
+        name: ''
+    };
+    function addModule(module, parent, names) {
+        //print("addModule", module, parent, names);
+        parent = parent || modules;
+        names = names || module.name;
+        if ("string" === typeof names) {
+            names = names.split('/');
+        }
+        //print("addModule", parent, names);
+        var path0 = names[0];
+        if (names.length === 1) {
+            parent[path0] = {
+                module: module,
+                name: path0
+            };
+            parent.itemCount++;
+            print("addModule", module.name);
+            return;
+        }
+        parent[path0] = parent[path0] || {
+            itemCount: 0,
+            name: parent.name + '/' + path0
+        };
+        addModule(module, parent[path0], names.slice(1));
+    }
+    memberModules.forEach(function(m) {
+        addModule(m);
+    });
+    return modules;
+}
+
 /**
  * Create the navigation sidebar.
  * @param {object} members The members that will be used to create the sidebar.
@@ -196,17 +231,34 @@ function buildNav(members) {
         classNav = '',
         globalNav = '';
 
-    if (members.modules.length) {
-        nav += '<h3>Modules</h3><ul>';
-        members.modules.forEach(function(m) {
-            if ( !hasOwnProp.call(seen, m.longname) ) {
-                nav += '<li>'+linkto(m.longname, m.name)+'</li>';
+    (function () {
+        function printModules(modules, arr, indent) {
+            arr = arr || [];
+            indent = indent || 0;
+            for (var i in modules) {
+                var module = modules[i];
+                if (module.module) {
+                    arr.push('<li>'+linkto(module.module.longname, module.name)+'</li>');
+                }
             }
-            seen[m.longname] = true;
-        });
-        
-        nav += '</ul>';
-    }
+            for (var i in modules) {
+                var module = modules[i];
+                if (!module.module) {
+                    if (module.itemCount > 0) {
+                        arr.push('<li>' + module.name + '</li>');
+                    }
+                    printModules(module, arr, indent + 2);
+                }
+            }
+            return arr;
+        }
+        if (members.modules.length) {
+            nav += '<h3>Modules</h3><ul>';
+            var modules = makeModuleMap(members.modules);
+            nav += printModules(modules).join('\n');
+            nav += '</ul>';
+        }
+    }());
     
     if (members.externals.length) {
         nav += '<h3>Externals</h3><ul>';
